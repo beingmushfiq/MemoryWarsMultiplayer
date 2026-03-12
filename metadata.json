@@ -1,0 +1,5 @@
+{
+  "name": "Memory Wars (Multiplayer)",
+  "description": "A real-time multiplayer version of the classic memory card game. Two players flip cards simultaneously to find matches and score points. This frontend demonstration simulates a second player to showcase the real-time interaction and smooth animations.",
+  "requestFramePermissions": []
+}

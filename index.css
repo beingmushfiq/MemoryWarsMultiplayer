@@ -1,0 +1,212 @@
+/* Memory Wars: Cyberpunk Elegance Design System */
+
+:root {
+  /* Color Palette */
+  --cyber-blue: #00f2ff;
+  --cyber-pink: #ff00ff;
+  --cyber-purple: #bc13fe;
+  --cyber-green: #00ff41;
+  --cyber-yellow: #fefe33;
+  --slate-950: #020617;
+  --slate-900: #0f172a;
+  --slate-800: #1e293b;
+  
+  /* Effects */
+  --glow-blue: 0 0 10px rgba(0, 242, 255, 0.5), 0 0 20px rgba(0, 242, 255, 0.3);
+  --glow-pink: 0 0 10px rgba(255, 0, 255, 0.5), 0 0 20px rgba(255, 0, 255, 0.3);
+  --glass-bg: rgba(15, 23, 42, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: blur(12px);
+}
+
+/* Base Styles */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--slate-950);
+  color: white;
+  font-family: 'Roboto', sans-serif;
+  overflow-x: hidden;
+  user-select: none;
+}
+
+.font-orbitron {
+  font-family: 'Orbitron', sans-serif;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--slate-950);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--slate-800);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cyber-blue);
+}
+
+/* Animations from index.html (Centralized) */
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+.shake {
+  animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes pulse-match {
+  0% { transform: scale3d(1, 1, 1); box-shadow: 0 0 0 0 rgba(0, 242, 255, 0.6); }
+  50% { transform: scale3d(1.05, 1.05, 1.05); box-shadow: 0 0 20px 10px rgba(0, 242, 255, 0); }
+  100% { transform: scale3d(1, 1, 1); box-shadow: 0 0 0 0 rgba(0, 242, 255, 0); }
+}
+.pulse-match {
+  animation: pulse-match 0.7s forwards;
+}
+
+@keyframes score-update {
+  0% { transform: scale(1); text-shadow: none; }
+  50% { transform: scale(1.4); color: var(--cyber-blue); text-shadow: 0 0 15px var(--cyber-blue); }
+  100% { transform: scale(1); text-shadow: none; }
+}
+.score-updated {
+  animation: score-update 0.5s ease-out;
+}
+
+@keyframes swipe-glow {
+  from { transform: translateX(-100%) skewX(-25deg); }
+  to { transform: translateX(200%) skewX(-25deg); }
+}
+.match-glow {
+  position: relative;
+  overflow: hidden;
+}
+.match-glow::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+  animation: swipe-glow 0.8s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+  pointer-events: none;
+}
+
+/* --- Background Atmosphere --- */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 50% 50%, rgba(0, 242, 255, 0.05) 0%, transparent 70%),
+    radial-gradient(circle at 80% 20%, rgba(255, 0, 255, 0.03) 0%, transparent 50%);
+  z-index: -2;
+}
+
+/* Digital Rain / Data Stream Effect */
+.bg-digital-rain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.15;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 242, 255, 0.1) 50%, transparent 100%);
+  background-size: 100% 200%;
+  animation: data-flow 20s linear infinite;
+}
+
+@keyframes data-flow {
+  from { background-position: 0 0; }
+  to { background-position: 0 200%; }
+}
+
+/* Starfield Parallax */
+.bg-stars {
+  position: fixed;
+  inset: -100px;
+  background-image: 
+    radial-gradient(2px 2px at 20px 30px, var(--cyber-blue), rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 40px 70px, var(--cyber-pink), rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 50px 160px, #fff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 90px 40px, var(--cyber-blue), rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 160px 120px, var(--cyber-pink), rgba(0,0,0,0));
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  animation: stars-move 100s linear infinite;
+  z-index: -3;
+}
+
+@keyframes stars-move {
+  from { transform: translateY(0) rotate(0deg); }
+  to { transform: translateY(-200px) rotate(1deg); }
+}
+
+/* Scanline Effect */
+.scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent 50%,
+    rgba(0, 0, 0, 0.1) 51%,
+    rgba(0, 0, 0, 0.1) 51.5%,
+    transparent 52%
+  );
+  background-size: 100% 4px;
+  z-index: 1000;
+  opacity: 0.3;
+}
+
+
+/* Glassmorphism Components */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  border-radius: 1rem;
+}
+
+.neon-border {
+  border: 1px solid var(--cyber-blue);
+  box-shadow: inset 0 0 10px rgba(0, 242, 255, 0.1), 0 0 10px rgba(0, 242, 255, 0.1);
+}
+
+.neon-text-blue {
+  color: var(--cyber-blue);
+  text-shadow: 0 0 8px rgba(0, 242, 255, 0.5);
+}
+
+/* Intro Animations */
+@keyframes glitch-title {
+  0% { transform: translate(0); text-shadow: 0 0 5px var(--cyber-blue); }
+  20% { transform: translate(-2px, 2px); text-shadow: 2px 0 var(--cyber-pink), -2px 0 var(--cyber-blue); }
+  40% { transform: translate(2px, -2px); text-shadow: -2px 0 var(--cyber-pink), 2px 0 var(--cyber-blue); }
+  60% { transform: translate(-2px, -2px); text-shadow: 2px -2px var(--cyber-pink), -2px 2px var(--cyber-blue); }
+  80% { transform: translate(2px, 2px); text-shadow: -2px 2px var(--cyber-pink), 2px -2px var(--cyber-blue); }
+  100% { transform: translate(0); text-shadow: 0 0 5px var(--cyber-blue); }
+}
+
+.glitch-title {
+  animation: glitch-title 4s infinite linear alternate-reverse;
+}
+
+/* 3D Layout Constants */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 640px) {
+  .gap-responsive {
+    gap: 0.5rem;
+  }
+}
