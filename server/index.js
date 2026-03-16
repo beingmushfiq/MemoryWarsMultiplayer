@@ -22,6 +22,8 @@ const io = new Server(server, {
 //   hostId: socket.id
 // }
 const rooms = {};
+const roomTimers = {};
+const TURN_TIME_LIMIT = 15;
 
 const generateRoomCode = () => {
     return Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -119,6 +121,10 @@ io.on('connection', (socket) => {
         
         if (room.players.length === 0) {
             delete rooms[roomId];
+            if (roomTimers[roomId]) {
+                clearInterval(roomTimers[roomId]);
+                delete roomTimers[roomId];
+            }
             console.log(`Room ${roomId} deleted`);
         } else {
             // Re-assign host if host left
@@ -131,6 +137,56 @@ io.on('connection', (socket) => {
     }
   };
 
+  const startTurnTimer = (roomId) => {
+      const room = rooms[roomId];
+      if (!room) return;
+
+      if (roomTimers[roomId]) {
+          clearInterval(roomTimers[roomId]);
+      }
+
+      room.turnTimeRemaining = TURN_TIME_LIMIT;
+      io.to(roomId).emit('timerUpdate', { timeLeft: room.turnTimeRemaining, activePlayerId: room.activePlayerId });
+
+      roomTimers[roomId] = setInterval(() => {
+          if (!rooms[roomId] || rooms[roomId].status !== 'PLAYING') {
+              clearInterval(roomTimers[roomId]);
+              delete roomTimers[roomId];
+              return;
+          }
+
+          rooms[roomId].turnTimeRemaining--;
+
+          io.to(roomId).emit('timerUpdate', {
+              timeLeft: rooms[roomId].turnTimeRemaining,
+              activePlayerId: rooms[roomId].activePlayerId
+          });
+
+          if (rooms[roomId].turnTimeRemaining <= 0) {
+              handleTurnTimeout(roomId);
+          }
+      }, 1000);
+  };
+
+  const handleTurnTimeout = (roomId) => {
+      const room = rooms[roomId];
+      if (!room) return;
+
+      // Switch turn
+      const currentPlayerIndex = room.players.findIndex(p => p.id === room.activePlayerId);
+      const nextPlayer = room.players[(currentPlayerIndex + 1) % room.players.length];
+      room.activePlayerId = nextPlayer.id;
+
+      console.log(`Turn timeout in room ${roomId}. Next player: ${room.activePlayerId}`);
+
+      io.to(roomId).emit('turnChanged', {
+          nextActivePlayerId: room.activePlayerId,
+          reason: 'timeout'
+      });
+
+      startTurnTimer(roomId);
+  };
+
   // Game actions
   socket.on('startGame', ({ roomId, seed }) => {
       const room = rooms[roomId];
@@ -139,18 +195,28 @@ io.on('connection', (socket) => {
           room.currentFrame = 0;
           room.seed = seed;
           room.players.forEach(p => p.score = 0);
+          room.activePlayerId = 1; // Default starting player
           io.to(roomId).emit('gameStarted', { ...room, seed });
+          startTurnTimer(roomId);
           console.log(`Game started in room ${roomId} with seed ${seed}`);
       }
   });
 
   socket.on('playerInput', ({ roomId, type, data }) => {
       const room = rooms[roomId];
-      if(room) {
+      if(room && room.status === 'PLAYING') {
+          const player = room.players.find(p => p.socketId === socket.id);
+
+          // Permission Check: Only the active player can make moves
+          if (!player || player.id !== room.activePlayerId) {
+              socket.emit('error', { message: "Wait your turn!" });
+              return;
+          }
+
           room.currentFrame = (room.currentFrame || 0) + 1;
           const inputFrame = {
               frame: room.currentFrame,
-              playerId: room.players.find(p => p.socketId === socket.id)?.id,
+              playerId: player.id,
               type,
               data
           };
@@ -189,6 +255,13 @@ io.on('connection', (socket) => {
           room.activePlayerId = nextActivePlayerId;
           if(isGameOver) {
               room.status = 'GAME_OVER';
+              if (roomTimers[roomId]) {
+                  clearInterval(roomTimers[roomId]);
+                  delete roomTimers[roomId];
+              }
+          } else {
+              // Reset timer for the next turn (could be same player or next)
+              startTurnTimer(roomId);
           }
           
           io.to(roomId).emit('matchResolved', { matchData, updatedPlayers, nextActivePlayerId, isGameOver });
@@ -200,6 +273,8 @@ io.on('connection', (socket) => {
       if(room) {
           room.activePlayerId = nextActivePlayerId;
           io.to(roomId).emit('turnChanged', { nextActivePlayerId });
+          // Reset timer for the next player
+          startTurnTimer(roomId);
       }
    });
 
