@@ -17,7 +17,7 @@ import { useMultiplayer } from './hooks/useMultiplayer';
 
 const App: React.FC = () => {
   const { state, handleCardClick: logicCardClick, startGame, resetGame, setPlayerProfile, usePowerUp, dispatch } = useGameLogic();
-  const { gameStatus, board, players, activePlayerId, winner, flippedCardIndices, isShaking, lastScoringPlayerId, stats, isAIThinking, theme: currentTheme, gameMode } = state;
+  const { gameStatus, board, players, activePlayerId, winner, flippedCardIndices, isShaking, lastScoringPlayerId, stats, isAIThinking, theme: currentTheme, gameMode, turnTimeRemaining } = state;
   
   // SAFE DERIVATION: Ensure player1 is available before any hooks or effects use it
   const player1 = players?.find(p => p.id === 1) || players?.[0];
@@ -54,6 +54,17 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (!socket) return;
+
+    socket.on('error', (data) => {
+        alert(data.message);
+    });
+
+    socket.on('turnChanged', ({ nextActivePlayerId, reason }) => {
+        if (reason === 'timeout') {
+            playSound('mismatch');
+        }
+        dispatch({ type: 'SYNC_ONLINE_STATE', payload: { activePlayerId: nextActivePlayerId } });
+    });
 
     socket.on('gameStarted', (updatedRoom) => {
         console.log(`NET_SYNC: Game starting with seed ${updatedRoom.seed}`);
@@ -297,7 +308,12 @@ const App: React.FC = () => {
         
         {gameStatus === GameStatus.Playing || gameStatus === GameStatus.GameOver ? (
           <main className="w-full flex flex-col items-center flex-grow">
-            <Scoreboard players={players} activePlayerId={activePlayerId} lastScoringPlayerId={lastScoringPlayerId} />
+            <Scoreboard
+                players={players}
+                activePlayerId={activePlayerId}
+                lastScoringPlayerId={lastScoringPlayerId}
+                turnTimeRemaining={gameMode === GameMode.ONLINE ? (room?.turnTimeRemaining ?? turnTimeRemaining) : turnTimeRemaining}
+            />
             
             {gameStatus === GameStatus.Playing && (
               <div className="flex flex-wrap justify-center gap-3 mb-6 px-4">

@@ -47,6 +47,10 @@ export const useMultiplayer = () => {
       setRoom(updatedRoom);
     });
 
+    newSocket.on('timerUpdate', ({ timeLeft, activePlayerId }) => {
+        setRoom(prev => prev ? { ...prev, turnTimeRemaining: timeLeft, activePlayerId } : null);
+    });
+
     newSocket.on('powerUpUsed', ({ powerUpType, playerId }) => {
       // We'll let App.tsx handle the actual logic if needed, 
       // but for now we can just emit an event or rely on setRoom if server updated it.

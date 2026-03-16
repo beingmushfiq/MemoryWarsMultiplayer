@@ -63,9 +63,10 @@ interface ScoreboardProps {
     players: Player[];
     activePlayerId: number;
     lastScoringPlayerId: number | null;
+    turnTimeRemaining?: number;
 }
 
-const Scoreboard: React.FC<ScoreboardProps> = ({ players, activePlayerId, lastScoringPlayerId }) => {
+const Scoreboard: React.FC<ScoreboardProps> = ({ players, activePlayerId, lastScoringPlayerId, turnTimeRemaining }) => {
   // DEFENSIVE GUARD: Handle empty or transiently missing player data
   if (!players || players.length === 0) {
     return (
@@ -125,9 +126,16 @@ const Scoreboard: React.FC<ScoreboardProps> = ({ players, activePlayerId, lastSc
                   {player.name}
                 </span>
                 {isActive && (
-                   <span className="text-[10px] font-bold text-cyber-blue bg-cyber-blue/20 px-2 py-0.5 rounded-sm animate-pulse flex-shrink-0">
-                     LIVE
-                   </span>
+                   <div className="flex items-center gap-2">
+                     {turnTimeRemaining !== undefined && (
+                        <span className={`text-[10px] font-black font-orbitron px-2 py-0.5 rounded-sm border ${turnTimeRemaining <= 5 ? 'text-cyber-pink border-cyber-pink animate-pulse' : 'text-cyber-blue border-cyber-blue/30'}`}>
+                            {turnTimeRemaining}s
+                        </span>
+                     )}
+                     <span className="text-[10px] font-bold text-cyber-blue bg-cyber-blue/20 px-2 py-0.5 rounded-sm animate-pulse flex-shrink-0">
+                       LIVE
+                     </span>
+                   </div>
                 )}
               </div>
               

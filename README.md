@@ -30,6 +30,9 @@ Accumulate energy by making matches and unleash devastating abilities:
 
 - **Room System**: Create a private battleground with a unique 4-character code.
 - **Instant Sync**: Every flip, match, and power-up usage is broadcasted instantly via Socket.io.
+- **Authoritative Server**: The central server manages turns, validates moves, and prevents cheating.
+- **Turn Management**: Integrated "Referee" logic ensures players follow turn sequences and handles timeouts (15s).
+- **Cross-Device Synchronization**: Action relay and authoritative state management keep all players in sync, even with varying connection speeds.
 - **Cross-Device**: Play seamlessly on mobile, tablet, or desktop.
 
 ### 🧠 Cortex AI Engine

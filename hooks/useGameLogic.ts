@@ -64,6 +64,7 @@ const initialState: GameState = {
   theme: 'Classic',
   seed: 0,
   frame: 0,
+  turnTimeRemaining: 15,
 };
 
 const gameReducer = (state: GameState, action: Action): GameState => {
@@ -121,6 +122,24 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         // CRITICAL FIX: Ensure players is derived correctly or falls back to current state
         if ('players' in validPayload && !validPayload.players) {
             delete validPayload.players;
+        }
+
+        // Handle board sync specifically to ensure cards are flipped correctly if forced by server
+        if (validPayload.activePlayerId !== undefined && validPayload.activePlayerId !== state.activePlayerId) {
+            // If turn switched, reset flipped cards if they weren't matched
+            if (state.flippedCardIndices.length > 0) {
+                 const newBoard = [...state.board];
+                 state.flippedCardIndices.forEach(idx => {
+                     if (newBoard[idx]) newBoard[idx] = { ...newBoard[idx], isFlipped: false };
+                 });
+                 return {
+                     ...state,
+                     ...validPayload,
+                     board: newBoard,
+                     flippedCardIndices: [],
+                     isShaking: true
+                 };
+            }
         }
 
         return {

@@ -93,6 +93,7 @@ export interface GameState {
   isAIThinking: boolean;
   seed: number;
   frame: number;
+  turnTimeRemaining?: number;
 }
 
 export interface InputFrame {
